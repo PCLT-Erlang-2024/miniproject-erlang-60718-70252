@@ -1,8 +1,8 @@
 -module(task1).
--export([start/0, start/2, producer/2, conveyor/1, truck/0]).
+-export([start/0, start/3, producer/2, conveyor/1, truck/1, truck/2]).
 
-start() -> start(10, 10).
-start(NLines, NProductions) -> [spawn(?MODULE, producer, [spawn(?MODULE, conveyor, [spawn(?MODULE, truck, [])]), NProductions]) || _ <- lists:seq(1,NLines)].
+start() -> start(10, 10, 10).
+start(NLines, NProductions, TruckSize) -> [spawn(?MODULE, producer, [spawn(?MODULE, conveyor, [spawn(?MODULE, truck, [TruckSize])]), NProductions]) || _ <- lists:seq(1,NLines)].
 
 producer(ConvId, 0) ->
 	ConvId ! stop,
@@ -23,11 +23,25 @@ conveyor(TruckId) ->
 			TruckId ! stop
 	end.
 
-truck() ->
+truck(TruckSize) -> truck(TruckSize, TruckSize).
+truck(TruckSize, CurrentSize) ->
 	receive
-		package ->
-			io:format("Truck ~p received package~n", [self()]),
-			truck();
+		{package, PackNum} ->
+			if 
+				TruckSize < 1 -> 
+					io:format("Truck ~p departed because package ~p (1/~p) was too big~n", [self(), PackNum, CurrentSize]),
+					truck(TruckSize, TruckSize, {package, PackNum});
+				TruckSize > 1 -> 
+					io:format("Truck ~p received package (1/~p)~n", [self(), CurrentSize]),
+					truck(TruckSize, CurrentSize - 1);
+				TruckSize == 1 -> 
+					io:format("Truck ~p received package (1/~p) and became full~n", [self(), CurrentSize]),
+					truck(TruckSize, TruckSize, {package, PackNum})
+			end;
 		stop ->
-			io:format("Truck ~p stopped~n", [self()])
+		io:format("Truck ~p stopped~n", [self()])
 	end.
+
+truck(TruckSize, CurrentSize, {package, PackNum}) ->
+	io:format("New Truck ~p has arrived and picked up package ~p (1/~p)~n", [self(), PackNum, CurrentSize]),
+	truck(TruckSize, CurrentSize - 1).
