@@ -1,0 +1,24 @@
+The diferent sizes of the packages were implemented by adding a new element to the "package" tuple, by adding a new element
+to represent the "Size" of the package, which is a random value that is less than or equal to the size of a truck.
+When a truck receives a "package" tuple it checks if the packages's size fits in its remaining space.
+If not, it departs and is replaced by a new truck that will pick up that package before continuing to receive
+packages from the conveyor in place of the previous truck.
+
+Correctness properties:
+ - Deadlock-free: Since this system does not use mutexes and none of the processes in the system send responses to any message sent,
+   that is, no Producer process receives a response from a Conveyor process and no Conveyor process receives a response from a
+   Truck process, the system has no synchronous calls.
+   Therefore, no deadlocks can occur in this system.
+ - No data races: Since there are no global shared variables and no process can receive messages from more than one process, no
+   data races can ever occur in this system.
+ - Starvation-free: When the producer process finishes sending all packages to its conveyor process, it sends an unique message
+   (a "stop" atom) with a different pattern from the "package" tuples to signal the end of the packages to send and terminates normally.
+   The conveyor, in turn, sends this message to its truck process when it receives this "stop" message to signal that the conveyor
+   has already sent all its packages and terminates its execution normally.
+   Upon receiving the "stop" message, the truck terminates normally.
+   This way, the system guarantees that a process always terminates normally when it has no more work left to do, thus preventing
+   process starvation from ocorring.
+   This method of guaranteeing a starvation-free system is only possible due to the fact that processes in Erlang evaluate the first
+   message that matches one of the patterns that they are waiting to receive in the order that the process received the messages
+   and every process in this system uses only one receive command that waits for a message that matches the pattern of the "package"
+   tuple or a message with only a "stop" atom, guaranteeing that the "stop" is only evaluated after every package has been evaluated.

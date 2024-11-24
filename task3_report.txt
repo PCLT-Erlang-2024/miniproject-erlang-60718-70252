@@ -1,0 +1,11 @@
+The waiting time for a new truck to arrive was implemented by adding a delay on the truck function that handles the replacement
+of the trucks, which has a random integer value between 1 and 10 seconds.
+
+The behavior of having a conveyor stop while a truck is being replaced was implemented by adding a the process id to the "package"
+tuple that the conveyor process sends to the truck process that identifies the conveyor process so that, when the truck needs to been
+replaced, the truck process can send a unique message (a "wait" atom) to the conveyor process to signal its replacement to
+the conveyor. This new message has been added as one of the patterns that the conveyor can evaluate, that makes the process move to
+a new conveyor function that waits to receive a "go" atom, sent by the truck process when the new truck arrives,
+in order to return to the main function to continue to send packages to the truck.
+
+Correctness properties: (To do)
