@@ -1,0 +1,15 @@
+The system was designed to be like a factory with multiple independent production lines.
+In this case, each production line would equate to a {producer, conveyor, truck} combination of processes that forward packages to each order's mailbox in the previously mentioned order.
+
+The producer produces packages and sends them to the conveyor's mailbox, which then forwards them to the truck's.
+The truck then accumulates packages until it reaches its capacity, at which point it departs.
+
+When all the packages have been produced, the production lines shut down in a cascade-like manner:
+The producer sends a stop atom to the conveyor, which forwards it to the truck before ending its process, and the truck does the same.
+
+The system ensures:
+ - Concurrency by using independent Erlang processes to model conveyor belts and trucks
+ - Deadlock-Freedom because all packages are eventually be loaded onto trucks
+ - Progress Guarantee because all parts of the system keep working to process and deliver packages
+
+The system uses Erlang's message passing mechanisms through the sending of messages to the processes mailboxes.
