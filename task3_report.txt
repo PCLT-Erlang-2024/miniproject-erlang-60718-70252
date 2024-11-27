@@ -10,7 +10,10 @@ in order to return to the main function to continue to send packages to the truc
 
 Correctness properties:
  - Deadlock-free: This system does not use mutexes, so deadlocks cannot occur due to these. 
-   There are also no synchronous calls in the system, that is, no process waits for a response after sending a message.
+   There are no synchronous calls between Producer processes and Conveyor processes.
+   There is a synchronous call from the Conveyor process to the Truck process, however, the Truck has no synchronous calls to
+   the Conveyor and the system ensures that the Truck process always returns a signal upon receiving a package and after
+   getting replaced, so the synchronous call from the Conveyor to the Truck causes no deadlocks to occur.
    In order to make the Conveyor process pause their operation while waiting for the truck at their endpoint to be
    replaced, we had to implement a new pattern that signals that the truck is not available as well as a new Conveyor function
    that does nothing except wait to receive the message that signals the arrival of a new truck. However, this does not cause
