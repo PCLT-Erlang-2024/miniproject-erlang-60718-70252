@@ -17,16 +17,13 @@ conveyor(TruckId, wait) ->
 	receive
 		replaced ->
 			io:format("New truck has arrived at Conveyor ~p~n", [self()]),
-			conveyor(TruckId, go);
-		stop ->
-			io:format("Conveyor ~p stopped~n", [self()]),
-			TruckId ! stop
+			conveyor(TruckId, go)
 	end;
 conveyor(TruckId, _) ->
 	receive
 		wait -> conveyor(TruckId, wait);
 		{package, PackNum, Size} ->
-			io:format("Conveyor ~p received package (~p)~n", [self(), size]),
+			io:format("Conveyor ~p received package (~p)~n", [self(), Size]),
 			TruckId ! {package, PackNum, Size, self()},
 			conveyor(TruckId, go);
 		stop ->
@@ -39,15 +36,15 @@ truck(TruckSize, CurrentSize) ->
 	receive
 		{package, PackNum, Size, ConvId} ->
 			if 
-				size > TruckSize -> 
+				Size > TruckSize -> 
 					io:format("Truck ~p departed because package ~p (~p/~p) was too big~n", [self(), PackNum, Size, CurrentSize]),
 					truck(TruckSize, TruckSize, {package, PackNum, Size, ConvId});
-				size < TruckSize -> 
+				Size < TruckSize -> 
 					ConvId ! wait,
-					io:format("Truck ~p received package (~p/~p)~n", [self(), size, CurrentSize]),
-					truck(TruckSize, CurrentSize - size);
-				size == TruckSize -> 
-					io:format("Truck ~p received package (~p/~p) and became full~n", [self(), size, CurrentSize]),
+					io:format("Truck ~p received package (~p/~p)~n", [self(), Size, CurrentSize]),
+					truck(TruckSize, CurrentSize - Size);
+				Size == TruckSize -> 
+					io:format("Truck ~p received package (~p/~p) and became full~n", [self(), Size, CurrentSize]),
 					truck(TruckSize, TruckSize, {package, PackNum, Size, ConvId})
 			end;
 		stop ->

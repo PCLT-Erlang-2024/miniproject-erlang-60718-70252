@@ -9,14 +9,14 @@ producer(ConvId, 0) ->
 	io:format("Producer ~p stopped~n", [self()]);
 producer(ConvId, NProductions) ->
 	io:format("Producer ~p sending package~n", [self()]),
-	ConvId ! package,
+	ConvId ! {package, NProductions},
 	producer(ConvId, NProductions-1).
 
 conveyor(TruckId) ->
 	receive
-		package ->
+		{package, PackNum} ->
 			io:format("Conveyor ~p received package~n", [self()]),
-			TruckId ! package,
+			TruckId ! {package, PackNum},
 			conveyor(TruckId);
 		stop ->
 			io:format("Conveyor ~p stopped~n", [self()]),

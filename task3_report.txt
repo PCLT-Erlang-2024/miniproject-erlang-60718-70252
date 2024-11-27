@@ -8,4 +8,25 @@ the conveyor. This new message has been added as one of the patterns that the co
 a new conveyor function that waits to receive a "go" atom, sent by the truck process when the new truck arrives,
 in order to return to the main function to continue to send packages to the truck.
 
-Correctness properties: (To do)
+Correctness properties:
+ - Deadlock-free: This system does not use mutexes, so deadlocks cannot occur due to these. 
+   There are also no synchronous calls in the system, that is, no process waits for a response after sending a message.
+   In order to make the Conveyor process pause their operation while waiting for the truck at their endpoint to be
+   replaced, we had to implement a new pattern that signals that the truck is not available as well as a new Conveyor function
+   that does nothing except wait to receive the message that signals the arrival of a new truck. However, this does not cause
+   deadlocks because the new truck is guaranteed to arrive, so the Conveyor process will always go back to processing messages
+   when the truck returns.
+   Therefore, no deadlocks can occur in this system.
+ - No data races: Since there are no global shared variables and no process can receive messages from more than one process, no
+   data races can ever occur in this system.
+ - Starvation-free: When the producer process finishes sending all packages to its conveyor process, it sends an unique message
+   (a "stop" atom) with a different pattern from the "package" tuples to signal the end of the packages to send and terminates normally.
+   The conveyor, in turn, sends this message to its truck process when it receives this "stop" message to signal that the conveyor
+   has already sent all its packages and terminates its execution normally.
+   Upon receiving the "stop" message, the truck terminates normally.
+   This way, the system guarantees that a process always terminates normally when it has no more work left to do, thus preventing
+   process starvation from ocorring.
+   This method of guaranteeing a starvation-free system is only possible due to the fact that processes in Erlang evaluate the first
+   message that matches one of the patterns that they are waiting to receive in the order that the process received the messages
+   and every process in this system uses only one receive command that waits for a message that matches the pattern of the "package"
+   tuple or a message with only a "stop" atom, guaranteeing that the "stop" is only evaluated after every package has been evaluated.

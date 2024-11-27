@@ -16,7 +16,7 @@ producer(ConvId, NProductions, MaxSize) ->
 conveyor(TruckId) ->
 	receive
 		{package, PackNum, Size} ->
-			io:format("Conveyor ~p received package (~p)~n", [self(), size]),
+			io:format("Conveyor ~p received package (~p)~n", [self(), Size]),
 			TruckId ! {package, PackNum, Size},
 			conveyor(TruckId);
 		stop ->
@@ -29,14 +29,14 @@ truck(TruckSize, CurrentSize) ->
 	receive
 		{package, PackNum, Size} ->
 			if 
-				size > TruckSize -> 
+				Size > TruckSize -> 
 					io:format("Truck ~p departed because package ~p (~p/~p) was too big~n", [self(), PackNum, Size, CurrentSize]),
 					truck(TruckSize, TruckSize, {package, PackNum, Size});
-				size < TruckSize -> 
-					io:format("Truck ~p received package (~p/~p)~n", [self(), size, CurrentSize]),
-					truck(TruckSize, CurrentSize - size);
-				size == TruckSize -> 
-					io:format("Truck ~p received package (~p/~p) and became full~n", [self(), size, CurrentSize]),
+				Size < TruckSize -> 
+					io:format("Truck ~p received package (~p/~p)~n", [self(), Size, CurrentSize]),
+					truck(TruckSize, CurrentSize - Size);
+				Size == TruckSize -> 
+					io:format("Truck ~p received package (~p/~p) and became full~n", [self(), Size, CurrentSize]),
 					truck(TruckSize, TruckSize, {package, PackNum, Size})
 			end;
 		stop ->
