@@ -28,13 +28,13 @@ truck(TruckSize, CurrentSize) ->
 	receive
 		{package, PackNum} ->
 			if 
-				TruckSize < 1 -> 
+				CurrentSize < 1 -> 
 					io:format("Truck ~p departed because package ~p (1/~p) was too big~n", [self(), PackNum, CurrentSize]),
 					truck(TruckSize, TruckSize, {package, PackNum});
-				TruckSize > 1 -> 
+				CurrentSize > 1 -> 
 					io:format("Truck ~p received package (1/~p)~n", [self(), CurrentSize]),
 					truck(TruckSize, CurrentSize - 1);
-				TruckSize == 1 -> 
+				CurrentSize == 1 -> 
 					io:format("Truck ~p received package (1/~p) and became full~n", [self(), CurrentSize]),
 					truck(TruckSize, TruckSize, {package, PackNum})
 			end;
